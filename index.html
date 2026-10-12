@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Organizador de Evoluções - Leo</title>
+<style>
+  body{margin:0;background:#eef3fa;color:#1b2a3a;font:16px/1.5 'Segoe UI',system-ui,sans-serif}
+  header{padding:18px 16px;background:linear-gradient(#e0edfb,#b6cfec);border-bottom:1px solid #8fb0d6}
+  header h1{margin:0;font-size:20px;color:#1d3a5f}
+  main{max-width:640px;margin:0 auto;padding:16px}
+  ol{padding-left:20px} li{margin-bottom:10px}
+  textarea{width:100%;height:110px;font:12px Consolas,monospace;border:1px solid #a9bfd8;border-radius:6px;padding:8px;box-sizing:border-box}
+  button{background:linear-gradient(#8be39a 50%,#2fa244 50%);border:1px solid #1d6b2c;border-radius:8px;color:#fff;font:600 16px inherit;padding:12px 18px;margin:8px 0}
+  #ok{color:#1d6b2c;font-weight:600;min-height:1.5em}
+</style>
+</head>
+<body>
+<header><h1>Organizador de Evoluções - Leo</h1></header>
+<main>
+  <p>Instale uma vez. Depois é só tocar no favorito com o sistema aberto.</p>
+  <button id="copiar">Copiar código do favorito</button>
+  <div id="ok"></div>
+  <textarea id="codigo" readonly></textarea>
+  <ol>
+    <li>Toque em <b>Copiar código do favorito</b>.</li>
+    <li>No Chrome, abra qualquer página e adicione aos favoritos (menu ⋮ → ☆). Depois edite o favorito: nome <b>Organizador</b>, endereço = o código copiado (cole).</li>
+    <li>Conecte a VPN e abra o sistema, na lista de Prontuários.</li>
+    <li>Digite <b>Organizador</b> na barra de endereço e toque na sugestão com o ícone de favorito. O painel aparece sobre o sistema.</li>
+    <li>Toque em <b>Perfis</b> e cole o conteúdo do arquivo <b>perfis.json</b> do computador.</li>
+  </ol>
+  <p>Comece sempre pelo modo <b>Simulação</b>: ele preenche e cancela, sem salvar nada.</p>
+</main>
+<script>
+  var base = location.href.replace(/[^\/]*$/, '');
+  var code = "javascript:(function(){var s=document.createElement('script');s.src='" + base +
+    "organizador.js?v='+Date.now();s.onerror=function(){alert('Não consegui carregar o Organizador (internet ou bloqueio do site).')};document.body.appendChild(s)})();";
+  var ta = document.getElementById('codigo');
+  ta.value = code;
+  document.getElementById('copiar').onclick = function () {
+    function fim(ok) { document.getElementById('ok').textContent = ok ? 'Copiado.' : 'Não consegui copiar. Toque na caixa abaixo, selecione tudo e copie.'; }
+    if (navigator.clipboard) navigator.clipboard.writeText(code).then(function () { fim(true); }, function () { fim(false); });
+    else { ta.select(); try { fim(document.execCommand('copy')); } catch (e) { fim(false); } }
+  };
+</script>
+</body>
+</html>
