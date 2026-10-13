@@ -32,7 +32,10 @@
   }
 
   const S = { perfis: {}, pac: [], atrib: {}, brush: '', rodando: false, parar: false, res: null };
+  // perfis do Organizador do computador; usados enquanto você não colar outros em "Perfis"
+  const PERFIS_PADRAO = {"1":{"nome":"Tens - Laser - Cinesio","marcar":["er_Alongamentos_Pertinentes","er_Exercícios_Fortalecimento_Muscular","laser_1_J_cm_","laser_3_J_cm_","tensa_20_min","res_Evolução_Satisfatória"],"eva":null,"intensidade":"","obs":""},"2":{"nome":"Tens + Liberação + Cinesio","marcar":["er_Alongamentos_Pertinentes","er_Exercícios_Fortalecimento_Muscular","er_Liberação_Miofascial","er_Relaxamento","er_Trabalho_de_Mobilidade","tensa_20_min","res_Evolução_Satisfatória"],"eva":null,"intensidade":"","obs":""},"3":{"nome":"Tens + IV + Relaxamento/Alongamentos","marcar":["er_Alongamentos_Pertinentes","er_Relaxamento","iv_10_min","tensa_20_min","res_Evolução_Satisfatória"],"eva":null,"intensidade":"","obs":""},"9":{"nome":"Cinesio + Laser + Alongamento (S/ Tens)","marcar":["er_Alongamentos_Pertinentes","er_Exercícios_Fortalecimento_Muscular","er_Trabalho_de_Mobilidade","laser_1_J_cm_","res_Evolução_Satisfatória"],"eva":null,"intensidade":"","obs":""},"4":{"nome":"Pós OP - Full Cinesio S/Tens e S/Laser","marcar":["er_Alongamentos_Pertinentes","er_Exercícios_Fortalecimento_Muscular","er_Manipulação_Articular","er_Propriocepção","er_Trabalho_de_Mobilidade","tensa_20_min","res_Evolução_Satisfatória","res_Ganho_ADM","res_Ganho_FM"],"eva":null,"intensidade":"","obs":""},"6":{"nome":"Pós OP - Start - Manipulação Art; Mobilidade; Tens; Laser","marcar":["er_Manipulação_Articular","er_Trabalho_de_Mobilidade","laser_1_J_cm_","tensa_20_min"],"eva":null,"intensidade":"","obs":""},"5":{"nome":"Pós OP - FES / Full Cinesio","marcar":["er_Alongamentos_Pertinentes","er_Exercícios_Fortalecimento_Muscular","er_Manipulação_Articular","er_Trabalho_de_Mobilidade","fess_15_min"],"eva":null,"intensidade":"","obs":""}};
   try { S.perfis = JSON.parse(localStorage.getItem(LS) || '{}'); } catch (e) { }
+  if (!Object.keys(S.perfis).length) S.perfis = JSON.parse(JSON.stringify(PERFIS_PADRAO));
 
   /* ---------------- robô (mesma lógica do bot do computador) ---------------- */
   const modal = () => $$('.overlay').find(o => $$('.modalTitle', o).some(t => t.textContent.includes('Nova Evolução')));
@@ -255,11 +258,18 @@
     car: () => carregar().catch(falha),
     imp: () => { const i = $('#oel-i'); i.style.display = i.style.display === 'none' ? 'block' : 'none'; $('#oel-t').value = Object.keys(S.perfis).length ? JSON.stringify(S.perfis, null, 1) : ''; },
     salvarp: () => {
+      const bruto = $('#oel-t').value;
       try {
-        const o = JSON.parse($('#oel-t').value);
+        // aceita texto com aspas curvas, espaços estranhos e palavras antes/depois das chaves
+        const limpa = bruto.replace(/[\u201C\u201D\u201E\u201F\u2033\u02BA]/g, '"').replace(/[\u00A0\u200B\uFEFF]/g, ' ');
+        const a = limpa.indexOf('{'), z = limpa.lastIndexOf('}');
+        if (a < 0 || z < a) throw new Error('não achei o texto entre { e }');
+        const o = JSON.parse(limpa.slice(a, z + 1));
         if (!o || typeof o !== 'object' || !Object.values(o).every(p => p && Array.isArray(p.marcar))) throw new Error('formato inesperado');
         S.perfis = o; salvarPerfis(); renderBrush(); $('#oel-i').style.display = 'none'; log(Object.keys(o).length + ' perfis salvos.');
-      } catch (e) { log('ERRO: texto dos perfis inválido (' + e.message + ').'); }
+      } catch (e) {
+        log('ERRO: texto dos perfis inválido (' + e.message + '). Começo do texto na caixa: ' + JSON.stringify(bruto.slice(0, 30)) + ' — tamanho: ' + bruto.length);
+      }
     },
     'd-': () => moverData(-1), 'd+': () => moverData(1),
     hj: () => { $('#oel-d').value = iso(new Date()); dia(); },
