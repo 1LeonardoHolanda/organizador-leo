@@ -55,7 +55,7 @@
     const el = $$('body *').find(e => !e.children.length && e.textContent.trim() === 'Prontuários');
     if (!el) throw new Error('Abra a lista de Prontuários no sistema.');
     el.click();
-    await until(() => $('tbody tr'), 8000, 'Não consegui chegar na lista de Prontuários.');
+    await until(() => $('tbody tr'), 20000, 'Não consegui chegar na lista de Prontuários.');
   }
 
   async function carregar() {
@@ -109,9 +109,9 @@
     if (l.length > 1) log('   aviso: há nomes repetidos, usando o primeiro');
     $$('strong', l[0]).find(re).click();
 
-    const add = await until(() => btn(document, 'Adicionar Evolução').pop(), 10000, 'botão Adicionar Evolução não apareceu');
+    const add = await until(() => btn(document, 'Adicionar Evolução').pop(), 20000, 'botão Adicionar Evolução não apareceu');
     add.click();
-    await until(modal, 10000, 'formulário Nova Evolução não abriu');
+    await until(modal, 20000, 'formulário Nova Evolução não abriu');
     await preencher(perf, data);
 
     const cancelar = async () => { const m = modal(); if (m) btn(m, 'Cancelar')[0].click(); await fechar(); await limparBusca(); };
@@ -126,7 +126,7 @@
       if (r === 'nao') { await cancelar(); return 'PULADO pelo usuário'; }
     }
     btn(modal(), 'Salvar Evolução')[0].click();
-    await until(() => !modal(), 10000, 'clicou em Salvar mas o formulário não fechou — VERIFIQUE no sistema se salvou');
+    await until(() => !modal(), 20000, 'clicou em Salvar mas o formulário não fechou — VERIFIQUE no sistema se salvou');
     await fechar(); await limparBusca();
     return 'SALVO (data ' + br(data) + ')';
   }
@@ -204,7 +204,7 @@
     <div class="r"><button data-a="d-">◀</button><input type="date" id="oel-d"><button data-a="d+">▶</button><button data-a="hj">Hoje</button><small id="oel-dia"></small></div>
     <select id="oel-m"><option value="simulacao">Simulação (preenche, NÃO salva)</option><option value="confirmar">Confirmar cada paciente</option><option value="auto">Automático (salva direto)</option></select>
     <div id="oel-br" class="r"></div><small id="oel-lg"></small>
-    <input id="oel-q" placeholder="Buscar na lista...">
+    <div class="r"><input id="oel-q" placeholder="Buscar na lista..." style="flex:1;min-width:0"><button data-a="lq">✕ Limpar</button></div>
     <div id="oel-l"></div>
     <div class="r"><small id="oel-c" style="flex:1"></small><button data-a="lim">Limpar</button><button class="ok" data-a="play">▶ PLAY</button></div>
     <pre id="oel-log"></pre>
@@ -216,7 +216,12 @@
   pill.id = 'oel-pill'; pill.textContent = '📋 Organizador';
   document.body.append(P, bar, pill);
 
-  const log = m => { const l = $('#oel-log'); const d = new Date(); l.textContent += pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '  ' + m + '\n'; l.scrollTop = l.scrollHeight; };
+  const log = m => {
+    const l = $('#oel-log'), d = new Date(), s = document.createElement('span');
+    s.textContent = pad(d.getHours()) + ':' + pad(d.getMinutes()) + ':' + pad(d.getSeconds()) + '  ' + m + '\n';
+    if (/FALHA|ERRO/.test(m)) { s.style.color = '#c0261b'; s.style.fontWeight = '700'; }
+    l.appendChild(s); l.scrollTop = l.scrollHeight;
+  };
   const salvarPerfis = () => { try { localStorage.setItem(LS, JSON.stringify(S.perfis)); } catch (e) { log('Não consegui guardar os perfis neste navegador.'); } };
   const barBtns = () => { $('#oel-bb').innerHTML = '<button class="no" data-a="parar">■ Parar</button>'; };
   function ask(txt) {
@@ -274,6 +279,7 @@
     'd-': () => moverData(-1), 'd+': () => moverData(1),
     hj: () => { $('#oel-d').value = iso(new Date()); dia(); },
     lim: () => { S.atrib = {}; render(); },
+    lq: () => { const q = $('#oel-q'); q.value = ''; render(); q.focus(); },
     play: () => play(),
     parar: () => { S.parar = true; if (S.res) S.res('parar'); }
   };
