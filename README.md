@@ -1,1 +1,1 @@
-# organizador-leo
+javascript:(function(){var s=document.createElement('script');s.src='https://1leonardoholanda.github.io/organizador-leo/organizador.js?v=%27+Date.now();s.onerror=function(){alert(%27N%C3%A3o%20consegui%20carregar%20o%20Organizador%20(internet%20ou%20bloqueio%20do%20site).%27)};document.body.appendChild(s)})();
